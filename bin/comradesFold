@@ -1,0 +1,101 @@
+#!/bin/bash
+#$ -cwd
+#$ -V
+#$ -t 1-1000
+
+# fold_with_constraints.sh -c constraints.txt -i in.fasta
+# -s 1 (triggers shuffling) -o $i (with external loop renames output files with number of repeats)
+# format of constraint file: F TAB i TAB j TAB k (k preferably is accepted by hybrid-ss-min if k>=3)
+# see hybrid-ss-min -h for details 
+
+# parsing command line options
+while getopts "c:i:o:s:" OPTION
+do
+     case $OPTION in
+         c) IN_CONSTRAINTS=$OPTARG ;;
+         i) IN_FASTA=$OPTARG ;;
+         o) OUTPUT_ID=$OPTARG ;;
+         s) SHUFFLING=$OPTARG;;
+	 ?) 
+
+             echo "incorrect option"
+             exit 0
+             ;;
+     esac
+done
+
+if [ "$SGE_TASK_ID" -gt "0" ] ; then
+    cp $IN_CONSTRAINTS $IN_CONSTRAINTS$SGE_TASK_ID
+    cp $IN_FASTA $IN_FASTA$SGE_TASK_ID
+fi
+
+SHUFFLED_CONSTRAINTS=$IN_CONSTRAINTS$SGE_TASK_ID".shuf"
+ACCEPTED_CONSTRAINTS=$IN_CONSTRAINTS$SGE_TASK_ID".accepted"
+CURRENT_CONSTRAINTS=$IN_FASTA$SGE_TASK_ID".aux"
+CT_OUTPUT=$IN_FASTA$SGE_TASK_ID".ct"
+
+echo "Welcome to Marta's program"
+echo
+echo "Input fasta file: " $IN_FASTA
+echo "Input constraints file: " $IN_CONSTRAINTS
+echo "Creating constraints file: " $CURRENT_CONSTRAINTS
+echo "Creating shuffled constraints file: " $SHUFFLED_CONSTRAINTS
+
+if [ "$CURRENT_CONSTRAINTS" == "$IN_CONSTRAINTS" ]; then
+        echo "Please name your constraint file something else... Exiting."
+        exit 1
+fi
+
+rm -f $ACCEPTED_CONSTRAINTS $CURRENT_CONSTRAINTS
+
+# chosing shuffling option
+if [ "$SHUFFLING" = "1" ]; then
+        shuf $IN_CONSTRAINTS > $SHUFFLED_CONSTRAINTS
+else
+        cp $IN_CONSTRAINTS $SHUFFLED_CONSTRAINTS
+fi
+
+echo in_constr
+head -5 $IN_CONSTRAINTS
+echo shuf in_constr
+head -5 $SHUFFLED_CONSTRAINTS
+
+WC=`cat $SHUFFLED_CONSTRAINTS | wc -l`
+
+for (( i=1; i<=$WC; i++ )); do
+      awk -v curr=$CURRENT_CONSTRAINTS -v i=$i 'NR==i{print $0 >> curr}' $SHUFFLED_CONSTRAINTS
+      hybrid-ss-min -c $IN_FASTA$SGE_TASK_ID
+#      CT_FILE_LENGTH=`cat $CT_OUTPUT | wc -l`
+#      if [ "$CT_FILE_LENGTH" -gt "1" ]; then
+
+      TEST_CT_FILE=`awk 'BEGIN{fnd=0}NR==FNR{a=$2;b=$3}NR!=FNR && $1==a && $5==b{fnd++}END{print fnd}' $CURRENT_CONSTRAINTS $CT_OUTPUT`
+      if [ "$TEST_CT_FILE" == "1" ]; then
+            cat $CURRENT_CONSTRAINTS > $ACCEPTED_CONSTRAINTS 
+      else 
+            if [ -e "$ACCEPTED_CONSTRAINTS" ]; then
+                  cat $ACCEPTED_CONSTRAINTS > $CURRENT_CONSTRAINTS
+            else
+                  rm -f $CURRENT_CONSTRAINTS
+            fi
+      fi
+done
+
+# final folding
+cat $ACCEPTED_CONSTRAINTS > $CURRENT_CONSTRAINTS
+hybrid-ss-min -c $IN_FASTA$SGE_TASK_ID
+
+if [ "$OUTPUT_ID" != "" ]; then
+     cp $CT_OUTPUT $CT_OUTPUT"."$OUTPUT_ID
+     cp $CURRENT_CONSTRAINTS $CURRENT_CONSTRAINTS"."$OUTPUT_ID
+fi
+
+echo $IN_CONSTRAINTS
+head -10 $IN_CONSTRAINTS
+echo $SHUFFLED_CONSTRAINTS
+head -10 $SHUFFLED_CONSTRAINTS
+echo $ACCEPTED_CONSTRAINTS
+head -10 $ACCEPTED_CONSTRAINTS
+echo $CURRENT_CONSTRAINTS
+head -10 $CURRENT_CONSTRAINTS
+
+

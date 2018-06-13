@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# comrades -i data.hyb -f reference.fasta -b 1 -e 1000
+
+# parsing command line options
+while getopts "i:f:b:e:" OPTION
+do
+     case $OPTION in
+         i) IN_HYB=$OPTARG ;;
+         f) REF_FASTA=$OPTARG ;;
+         b) BEGIN=$OPTARG ;;
+         e) END=$OPTARG ;;
+         ?)
+             echo "incorrect option"
+             exit 0
+             ;;
+     esac
+done
+
+REF_BARENAME=${REF_FASTA%.*}
+REF_TAB=$REF_BARENAME".tab"
+REF_FRAGMENT_FASTA=$REF_BARENAME"_"$BEGIN"-"$END".fasta"
+BIT_1=${IN_HYB/.hyb/.bit_1.fasta}
+BIT_2=${IN_HYB/.hyb/.bit_2.fasta}
+CT=$BIT_1"-"$BIT_2".ct"
+BASEPAIR_SCORES=${IN_HYB/.hyb/.basepair_scores.txt}
+FRAGMENT_SCORES=${IN_HYB/.hyb/.fragment_scores.txt}
+RANKED_INTERACTIONS=${IN_HYB/.hyb/}"."$BEGIN"-"$END"_ranked_interactions.txt"
+FOLDING_CONSTRAINTS=${RANKED_INTERACTIONS/ranked_interactions.txt/folding_constraints.txt}
+
+echo "Welcome to the comrades program"
+echo
+echo "Input hybrids file: " $IN_HYB
+echo "Reference fasta file: " $REF_FASTA
+echo "Fragment start coordinate: " $BEGIN
+echo "Fragment end coordinate: " $END
+echo
+
+# preparing reference files
+fasta2tab.awk $REF_FASTA > $REF_TAB
+awk -v b=$BEGIN -v e=$END 'BEGIN{FS="\t"}{print ">" $1 "\n" substr($2,b,e-b+1)}' $REF_TAB > $REF_FRAGMENT_FASTA
+
+# calculating comrades scores
+hyb2fasta_bits_allRNAs.awk $REF_TAB $IN_HYB
+hybrid-min $BIT_1 $BIT_2 2>&1 > /dev/null
+ct2bps.awk $CT | histogram.pl > $BASEPAIR_SCORES
+
+# converting basepair scores to folding constraints
+awk -v b=$BEGIN -v e=$END 'printed<=1000 && $1>=b && $1<=e && $2>=b && $2<=e{print $0; printed++}' $BASEPAIR_SCORES > $FRAGMENT_SCORES
+cat $FRAGMENT_SCORES | bp2hyb.sh > $RANKED_INTERACTIONS
+hyb2constraints.pl $RANKED_INTERACTIONS | awk -v b=$BEGIN '{print $1 "\t" $2-(b-1) "\t" $3-(b-1) "\t" $4}' > $FOLDING_CONSTRAINTS
+
+# cleaning up
+rm $REF_TAB
+rm $BIT_1
+rm $BIT_2
+rm $BIT_1"-"$BIT_2".37.plot"
+rm $BIT_1"-"$BIT_2".37.ext"
+rm $BIT_1"-"$BIT_2".run"
+rm $BIT_1"-"$BIT_2".dG"
+rm $BIT_1"-"$BIT_2".asc"
+rm $FRAGMENT_SCORES
+rm $RANKED_INTERACTIONS
+
+
