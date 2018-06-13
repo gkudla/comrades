@@ -2,17 +2,17 @@
 
 A program for folding RNA using constraints from proximity ligation experiments.
 
-## Getting Started
+## Background
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+RNA proximity ligation methods such as CLASH, HiC, PARIS, SPLASH, and COMRADES generate chimeric reads that represent RNA-RNA interactions.
+
+Comrades inputs a set of mapped chimeric reads (produced by hyb, https://github.com/gkudla/hyb), and outputs a ranked list of predicted basepairs. It then combines these basepairs into short structural elements, ranks the elements by number of supporting chimeric reads, and uses the ranked elements as constraints for RNA folding. The output is an RNA structure or set of structures in UNAFold .ct format or vienna dot-bracket format.
 
 ### Prerequisites
 
 UNAFold http://unafold.rna.albany.edu/?q=DINAMelt/software
 
-hyb https://github.com/gkudla/hyb
-
-perl version 5 (might work with other versions too)
+Perl version 5
 
 ### Installation
 
@@ -46,7 +46,7 @@ fold RNA using constraints
 comradesFold -c testData.3324-4521_folding_constraints.txt -i Zika_3324-4521.fasta
 ```
 
-fold RNA 1,000 times
+fold RNA 1,000 times (requires computer cluster running qsub)
 
 ```
 qsub comradesFold -c testData.3324-4521_folding_constraints.txt -i Zika_3324-4521.fasta -s 1
@@ -55,7 +55,7 @@ qsub comradesFold -c testData.3324-4521_folding_constraints.txt -i Zika_3324-452
 
 ## Authors
 
-* **Grzegorz Kudla, Marta Gabryelska** 
+* **Grzegorz Kudla, Marta Gabryelska 2017-2018** 
 
 ## License
 
