@@ -55,7 +55,7 @@ qsub comradesFold -c testData.3324-4521_folding_constraints.txt -i Zika_3324-452
 
 ## Authors
 
-* **Grzegorz Kudla, Marta Gabryelska 2017-2018** 
+* Grzegorz Kudla, Marta Gabryelska 2017-2018
 
 ## License
 
