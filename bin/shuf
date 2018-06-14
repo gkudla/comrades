@@ -1,0 +1,4 @@
+#!/bin/bash
+
+awk -v seed=$RANDOM 'BEGIN{srand(seed)}{print rand() "\t" $0}' $1 | sort -k1,1n | cut -f2-
+
