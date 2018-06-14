@@ -3,9 +3,10 @@
 #$ -V
 #$ -t 1-1000
 
-# fold_with_constraints.sh -c constraints.txt -i in.fasta
-# -s 1 (triggers shuffling) -o $i (with external loop renames output files with number of repeats)
-# format of constraint file: F TAB i TAB j TAB k (k preferably is accepted by hybrid-ss-min if k>=3)
+# comradesFold -c constraints.txt -i in.fasta
+# format of constraint file: F TAB i TAB j TAB k (hybrid-ss-min prefers constraints with length k>=3)
+# -s 1, shuffle constraints
+# -o <TEXT>, append TEXT to output file name
 # see hybrid-ss-min -h for details 
 
 # parsing command line options
@@ -34,7 +35,7 @@ ACCEPTED_CONSTRAINTS=$IN_CONSTRAINTS$SGE_TASK_ID".accepted"
 CURRENT_CONSTRAINTS=$IN_FASTA$SGE_TASK_ID".aux"
 CT_OUTPUT=$IN_FASTA$SGE_TASK_ID".ct"
 
-echo "Welcome to Marta's program"
+echo "Welcome to comradesFold"
 echo
 echo "Input fasta file: " $IN_FASTA
 echo "Input constraints file: " $IN_CONSTRAINTS
@@ -54,11 +55,6 @@ if [ "$SHUFFLING" = "1" ]; then
 else
         cp $IN_CONSTRAINTS $SHUFFLED_CONSTRAINTS
 fi
-
-echo in_constr
-head -5 $IN_CONSTRAINTS
-echo shuf in_constr
-head -5 $SHUFFLED_CONSTRAINTS
 
 WC=`cat $SHUFFLED_CONSTRAINTS | wc -l`
 
@@ -88,14 +84,5 @@ if [ "$OUTPUT_ID" != "" ]; then
      cp $CT_OUTPUT $CT_OUTPUT"."$OUTPUT_ID
      cp $CURRENT_CONSTRAINTS $CURRENT_CONSTRAINTS"."$OUTPUT_ID
 fi
-
-echo $IN_CONSTRAINTS
-head -10 $IN_CONSTRAINTS
-echo $SHUFFLED_CONSTRAINTS
-head -10 $SHUFFLED_CONSTRAINTS
-echo $ACCEPTED_CONSTRAINTS
-head -10 $ACCEPTED_CONSTRAINTS
-echo $CURRENT_CONSTRAINTS
-head -10 $CURRENT_CONSTRAINTS
 
 

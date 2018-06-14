@@ -1,15 +1,23 @@
 #!/bin/bash
 
-# comrades -i data.hyb -f reference.fasta -b 1 -e 1000
+# comrades -i data.hyb -f reference.fasta -b 1 -e 1000 -n 75
+# -i, input file with chimeras in .hyb format
+# -f, reference fasta file
+# -b, start coordinate of fragment to be folded
+# -e, end coordinate of fragment to be folded
+# -n, number of folding constraints to output (default 75)
+
+NUM_CONSTRAINTS=75
 
 # parsing command line options
-while getopts "i:f:b:e:" OPTION
+while getopts "i:f:b:e:n:" OPTION
 do
      case $OPTION in
          i) IN_HYB=$OPTARG ;;
          f) REF_FASTA=$OPTARG ;;
          b) BEGIN=$OPTARG ;;
          e) END=$OPTARG ;;
+         n) NUM_CONSTRAINTS=$OPTARG ;;
          ?)
              echo "incorrect option"
              exit 0
@@ -28,7 +36,7 @@ FRAGMENT_SCORES=${IN_HYB/.hyb/.fragment_scores.txt}
 RANKED_INTERACTIONS=${IN_HYB/.hyb/}"."$BEGIN"-"$END"_ranked_interactions.txt"
 FOLDING_CONSTRAINTS=${RANKED_INTERACTIONS/ranked_interactions.txt/folding_constraints.txt}
 
-echo "Welcome to the comrades program"
+echo "Welcome to comradesMakeConstraints"
 echo
 echo "Input hybrids file: " $IN_HYB
 echo "Reference fasta file: " $REF_FASTA
@@ -48,7 +56,7 @@ ct2bps.awk $CT | histogram.pl > $BASEPAIR_SCORES
 # converting basepair scores to folding constraints
 awk -v b=$BEGIN -v e=$END 'printed<=1000 && $1>=b && $1<=e && $2>=b && $2<=e{print $0; printed++}' $BASEPAIR_SCORES > $FRAGMENT_SCORES
 cat $FRAGMENT_SCORES | bp2hyb.sh > $RANKED_INTERACTIONS
-hyb2constraints.pl $RANKED_INTERACTIONS | awk -v b=$BEGIN '{print $1 "\t" $2-(b-1) "\t" $3-(b-1) "\t" $4}' > $FOLDING_CONSTRAINTS
+hyb2constraints.pl $RANKED_INTERACTIONS | awk -v b=$BEGIN -v n=$NUM_CONSTRAINTS 'NR<=n{print $1 "\t" $2-(b-1) "\t" $3-(b-1) "\t" $4}' > $FOLDING_CONSTRAINTS
 
 # cleaning up
 rm $REF_TAB
