@@ -36,7 +36,7 @@ export PATH=comrades/bin:$PATH
 
 ## Running the scripts
 
-to test the programs, first copy the example input files from comrades/data into a folder of your choice, then run the commands below. Typical run time on the test data is 1 minute for comradesMakeConstraints, and 7 minutes for comradesFold.
+To test the programs, first copy the example input files from comrades/data into a folder of your choice, then run the commands below. Typical run time on the test data is 1 minute for comradesMakeConstraints, and 7 minutes for comradesFold.
 
 generate folding constraints
 
@@ -56,6 +56,21 @@ fold RNA 1,000 times (requires computer cluster running qsub)
 qsub comradesFold -c testData.3324-4521_folding_constraints.txt -i Zika_3324-4521.fasta -s 1
 ```
 
+## Outputs
+ 
+```
+# input folding constraints: 
+testData.3324-4521_folding_constraints.txt
+
+# a subset of mutually compatible folding constraints used to generate the folded structure:
+testData.3324-4521_folding_constraints.txt.accepted
+
+# folded RNA in hybrid-ss-min .ct format:
+Zika_3324-4521.fasta.ct
+
+# folded RNA in vienna dot-bracket format:
+Zika_3324-4521.fasta.vienna
+```
 
 ## Authors
 
