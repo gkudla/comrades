@@ -74,7 +74,7 @@ Zika_3324-4521.fasta.vienna
 
 ## Authors
 
-* Grzegorz Kudla, Marta Gabryelska 2017-2018
+* Grzegorz Kudla, Marta Gabryelska 2018
 
 ## License
 
