@@ -10,9 +10,11 @@ Comrades inputs a set of mapped chimeric reads (produced by hyb, https://github.
 
 ### Prerequisites
 
-UNAFold http://unafold.rna.albany.edu/?q=DINAMelt/software
+Linux operating system
 
 Perl version 5
+
+UNAFold http://unafold.rna.albany.edu/?q=DINAMelt/software
 
 ### Installation
 
@@ -33,6 +35,8 @@ export PATH=comrades/bin:$PATH
 ```
 
 ## Running the scripts
+
+to test the programs, first copy the example input files from comrades/data into a folder of your choice, then run the commands below. Typical run time on the test data is 1 minute for comradesMakeConstraints, and 7 minutes for comradesFold.
 
 generate folding constraints
 
