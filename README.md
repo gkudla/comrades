@@ -4,7 +4,7 @@ A program for folding RNA using constraints from proximity ligation experiments.
 
 ## Background
 
-RNA proximity ligation methods such as CLASH, HiC, PARIS, SPLASH, and COMRADES generate chimeric reads that represent RNA-RNA interactions.
+RNA proximity ligation methods such as CLASH, HiCLIP, PARIS, SPLASH, and COMRADES generate chimeric reads that represent RNA-RNA interactions.
 
 Comrades inputs a set of mapped chimeric reads (produced by hyb, https://github.com/gkudla/hyb), and outputs a ranked list of predicted basepairs. It then combines these basepairs into short structural elements, ranks the elements by number of supporting chimeric reads, and uses the ranked elements as constraints for RNA folding. The output is an RNA structure or set of structures in UNAFold .ct format or vienna dot-bracket format.
 
